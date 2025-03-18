@@ -87,15 +87,17 @@ end
 function sequential_projectors(
     coordinate::NTuple{3,Int}, network, env::CTMRGEnv, alg::HalfInfiniteProjector
 )
+    alg_coordinate = @set alg.svd_alg = svd_algorithm(alg, coordinate)
     _, r, c = coordinate
     r′ = _prev(r, size(env, 2))
     Q1 = TensorMap(EnlargedCorner(network, env, (SOUTHWEST, r, c)), SOUTHWEST)
     Q2 = TensorMap(EnlargedCorner(network, env, (NORTHWEST, r′, c)), NORTHWEST)
-    return compute_projector((Q1, Q2), coordinate, alg)
+    return compute_projector(Q1, Q2, alg_coordinate)
 end
 function sequential_projectors(
     coordinate::NTuple{3,Int}, network, env::CTMRGEnv, alg::FullInfiniteProjector
 )
+    alg_coordinate = @set alg.svd_alg = svd_algorithm(alg, coordinate)
     rowsize, colsize = size(env)[2:3]
     coordinate_nw = _next_coordinate(coordinate, rowsize, colsize)
     coordinate_ne = _next_coordinate(coordinate_nw, rowsize, colsize)
@@ -106,7 +108,7 @@ function sequential_projectors(
         TensorMap(EnlargedCorner(network, env, coordinate_nw), NORTHWEST),
         TensorMap(EnlargedCorner(network, env, coordinate_ne), NORTHEAST),
     )
-    return compute_projector(ec, coordinate, alg)
+    return compute_projector(ec[1] ⊙ ec[2], ec[3] ⊙ ec[4], alg_coordinate)
 end
 
 """

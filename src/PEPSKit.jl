@@ -36,6 +36,7 @@ include("operators/transfermatrix.jl")
 include("operators/localoperator.jl")
 include("operators/lattices/squarelattice.jl")
 include("operators/models.jl")
+include("operators/patch_mpo.jl")
 
 include("environments/ctmrg_environments.jl")
 include("environments/vumps_environments.jl")
@@ -96,5 +97,8 @@ export showtypeofgrad
 export InfiniteSquare, vertices, nearest_neighbours, next_nearest_neighbours
 export transverse_field_ising, heisenberg_XYZ, j1_j2
 export pwave_superconductor, hubbard_model, tj_model
+export embed_operator_in_patch, decompose_patch_to_mpo, PatchMPO
+export patch_mpo_transverse_field_ising, patch_mpo_heisenberg_XYZ, patch_mpo_j1_j2
+export patch_mpo_pwave_superconductor, patch_mpo_hubbard_model, patch_mpo_tj_model
 
 end # module

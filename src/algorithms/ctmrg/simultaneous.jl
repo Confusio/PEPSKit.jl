@@ -32,7 +32,8 @@ CTMRG_SYMBOLS[:simultaneous] = SimultaneousCTMRG
 
 function ctmrg_iteration(network, env::CTMRGEnv, alg::SimultaneousCTMRG)
     enlarged_corners = dtmap(eachcoordinate(network, 1:4)) do idx
-        return TensorMap(EnlargedCorner(network, env, idx), idx[1])
+        corner = TensorMap(EnlargedCorner(network, env, idx), idx[1])
+        return corner / norm(corner) # normalize expanded corner
     end  # expand environment
     projectors, info = simultaneous_projectors(enlarged_corners, env, alg.projector_alg)  # compute projectors on all coordinates
     env′ = renormalize_simultaneously(enlarged_corners, projectors, network, env)  # renormalize enlarged corners
@@ -78,24 +79,29 @@ end
 function simultaneous_projectors(
     coordinate, enlarged_corners::Array{E,3}, alg::HalfInfiniteProjector
 ) where {E}
+    alg_coordinate = @set alg.svd_alg = svd_algorithm(alg, coordinate)
+
     coordinate′ = _next_coordinate(coordinate, size(enlarged_corners)[2:3]...)
-    ec = (enlarged_corners[coordinate...], enlarged_corners[coordinate′...])
-    return compute_projector(ec, coordinate, alg)
+    return compute_projector(
+        enlarged_corners[coordinate...], enlarged_corners[coordinate′...], alg_coordinate
+    )
 end
 function simultaneous_projectors(
     coordinate, enlarged_corners::Array{E,3}, alg::FullInfiniteProjector
 ) where {E}
+    alg_coordinate = @set alg.svd_alg = svd_algorithm(alg, coordinate)
+
     rowsize, colsize = size(enlarged_corners)[2:3]
-    coordinate2 = _next_coordinate(coordinate, rowsize, colsize)
+    coordinate1 = deepcopy(coordinate)
+    coordinate2 = _next_coordinate(coordinate1, rowsize, colsize)
     coordinate3 = _next_coordinate(coordinate2, rowsize, colsize)
     coordinate4 = _next_coordinate(coordinate3, rowsize, colsize)
-    ec = (
-        enlarged_corners[coordinate4...],
-        enlarged_corners[coordinate...],
-        enlarged_corners[coordinate2...],
-        enlarged_corners[coordinate3...],
+
+    return compute_projector(
+        enlarged_corners[coordinate4...] ⊙ enlarged_corners[coordinate1...],
+        enlarged_corners[coordinate2...] ⊙ enlarged_corners[coordinate3...],
+        alg_coordinate,
     )
-    return compute_projector(ec, coordinate, alg)
 end
 
 """

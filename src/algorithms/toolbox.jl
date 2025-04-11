@@ -192,7 +192,7 @@ environment `env`.
 """
 function _contract_corners(ind::Tuple{Int,Int}, env::CTMRGEnv)
     r, c = ind
-    return tr(
+    return suptr(
         env.corners[NORTHWEST, _prev(r, end), _prev(c, end)] *
         env.corners[NORTHEAST, _prev(r, end), c] *
         env.corners[SOUTHEAST, r, c] *

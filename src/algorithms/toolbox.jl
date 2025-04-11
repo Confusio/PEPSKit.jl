@@ -53,7 +53,7 @@ function cost_function(peps::InfinitePEPS, env::CTMRGEnv, O::LocalOperator)
 end
 
 function suptr(t1::AbstractTensorMap)
-    return tr(twist(t1, filter(i -> !isdual(space(t1, i)), domainind(t1))))
+    return tr(twist(t1, filter(i -> !isdual(space(t1, i)), codomainind(t1))))
 end
 # function ⊙(t1::AbstractTensorMap, t2::AbstractTensorMap)
 #     return twist(t1, filter(i -> !isdual(space(t1, i)), domainind(t1))) * t2
